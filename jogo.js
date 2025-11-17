@@ -1,40 +1,56 @@
 console.log("Lcgame iniciado");
 
-// Canvas
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+// Seleciona a área do jogo
+const area = document.getElementById("areaDeJogo");
 
-// Jogador
-const jogador = {
-  x: 20,
-  y: 300,
-  w: 25,
-  h: 25,
-  cor: "cyan",
-  vx: 0,
-  vy: 0,
-  velocidade: 3
-};
+// Se não existir a área, mostra erro
+if (!area) {
+  console.error("ERRO: elemento 'areaDeJogo' não encontrado no HTML!");
+  area.innerHTML = "<p style='color:red;'>Erro: área do jogo não foi encontrada.</p>";
+  throw new Error("Elemento áreaDeJogo ausente");
+}
 
-// Chave
-const chave = {
-  x: 220,
-  y: 80,
-  w: 20,
-  h: 20,
-  cor: "yellow",
-  pega: false
-};
+// Sistema simples de progressão da fase
+let pontos = 0;
+let encontrouChave = false;
 
-// Porta
-const porta = {
-  x: 250,
-  y: 10,
-  w: 30,
-  h: 40,
-  cor: "brown"
-};
+// Atualiza a área de jogo
+function atualizarCena(texto) {
+  area.innerHTML = `
+    <div style="
+      font-size: 20px;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    ">
+      ${texto}
+    </div>
+  `;
+}
 
+// Função para procurar a chave
+function procurarChave() {
+  if (Math.random() > 0.6) {
+    encontrouChave = true;
+    pontos += 50;
+    atualizarCena("<h2>VOCÊ ACHOU A CHAVE! 🔑</h2><p>Agora abra a porta para fugir.</p>");
+  } else {
+    atualizarCena("<p>Nada encontrado. Continue procurando.</p>");
+  }
+  
+  document.getElementById("pontos").innerText = pontos;
+}
+
+// Reinicia fase
+function reiniciar() {
+  encontrouChave = false;
+  pontos = 0;
+  document.getElementById("pontos").innerText = pontos;
+  atualizarCena("<p>Procure a chave para escapar da cela…</p>");
+}
+
+// Executa pela primeira vez
+atualizarCena("<p>Procure a chave para escapar da cela…</p>");
 // Controles
 let teclas = {};
 document.addEventListener("keydown", e => teclas[e.key] = true);
