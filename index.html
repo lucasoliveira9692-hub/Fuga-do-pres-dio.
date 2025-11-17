@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lcgame — Fuga do Presídio</title>
+  <meta name="theme-color" content="#0b1220" />
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root{--bg:#0b1220;--panel:#0f1724;--accent:#1ea7ff;--text:#e6eef8}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071026);color:var(--text);font-family:system-ui,Arial,Helvetica,sans-serif}
+    .wrap{max-width:920px;margin:18px auto;padding:12px}
+    h1{margin:8px 0 12px}
+    #gameArea{margin:12px auto;width:90%;height:420px;border-radius:10px;background:var(--panel);display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.04)}
+    #status{color:#bfcfe0}
+    #error{color:#ff8a8a;display:none;margin-top:10px}
+    footer{margin-top:12px;color:#9fb3c9;font-size:13px}
+    button.btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:#012;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Lcgame — Fuga do Presídio</h1>
+    </header>
+
+    <main>
+      <div id="gameArea" role="main" aria-live="polite">
+        <div>
+          <div id="status">Carregando jogo...</div>
+          <div id="error" role="alert"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      Abra em modo anônimo se não ver atualizações. Este pacote foi preparado para GitHub Pages.
+    </footer>
+  </div>
+
+<script>
+(function(){
+  // 1) Unregister any existing service workers (temporary, to avoid old cached version)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      regs.forEach(function(r){ try{ r.unregister(); }catch(e){} });
+    }).catch(function(){});
+  }
+
+  function showError(msg){
+    console.error(msg);
+    var st = document.getElementById('status');
+    if(st) st.style.display = 'none';
+    var e = document.getElementById('error');
+    if(e){ e.style.display = 'block'; e.textContent = msg; }
+  }
+
+  // 2) Load the main script with cache-bust
+  var s = document.createElement('script');
+  s.src = 'jogo.js?v=' + Date.now();
+  s.defer = true;
+  s.onload = function(){
+    console.log('jogo.js carregado');
+    var st = document.getElementById('status');
+    if(st) st.textContent = 'Jogo carregado — inicializando...';
+    // After load, if the game sets the flag window.__lcgame_loaded, everything is OK.
+    setTimeout(function(){
+      if(window.__lcgame_loaded){
+        var st = document.getElementById('status');
+        if(st) st.textContent = 'Jogo pronto — boa sorte!';
+      } else {
+        showError('O script foi carregado mas não iniciou corretamente. Verifique console.');
+      }
+    }, 600);
+    // register a fresh (minimal) service worker to control future caching
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').then(function(reg){
+        console.log('Service worker registrado (novo).', reg.scope);
+      }).catch(function(err){ console.warn('Falha ao registrar SW:', err); });
+    }
+  };
+  s.onerror = function(){
+    showError('Falha ao carregar jogo.js — verifique se o arquivo existe com este nome (jogo.js)');
+  };
+  document.head.appendChild(s);
+
+  // 3) Timeout: if not loaded in 8s, show helpful message
+  setTimeout(function(){
+    if(!window.__lcgame_loaded){
+      showError('Tempo esgotado: o jogo não inicializou. Tente abrir em aba anônima ou verifique o arquivo jogo.js no repositório.');
+    }
+  }, 8000);
+
+  // global error reporting to visible area
+  window.addEventListener('error', function(ev){
+    try {
+      var msg = ev.message || ev.error || ev.filename || 'Erro desconhecido';
+      showError('Erro JS: ' + msg);
+    } catch(e){}
+  });
+
+})();
+</script>
+</body>
+</html>
