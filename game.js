@@ -1,40 +1,179 @@
-console.log("Lcgame iniciado");
+/* jogo.js - versão corrigida e segura para LCgame
+   - Define window.__lcgame_loaded = true quando carregar
+   - Captura e exibe erros no elemento #error (se existir)
+   - Inicializa um jogo mínimo (texto + botão iniciar)
+*/
 
-// Exemplo simples para testar
-document.getElementById("gameArea").innerHTML = `
-  <h2>O ladrão acorda na cela...</h2>
-  <p>Toque na tela para procurar uma forma de fugir!</p>
-`;    lastObstacleAt: 0,
-    obstacleInterval: 90, // frames
-  };
+(function(){
+  'use strict';
 
-  // jogador
-  const player = {
-    x: 0.5 * (canvas.width / (window.devicePixelRatio || 1)), // center
-    y: (canvas.height / (window.devicePixelRatio || 1)) - 120,
-    w: 40,
-    h: 40,
-    vx: 0,
-    speed: 4,
-    color: '#FFD54F'
-  };
+  // sinaliza carregamento (usado pelo index.html para detectar sucesso)
+  window.__lcgame_loaded = false;
 
-  // controles
-  const keys = { left: false, right: false };
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
-    if (!game.running && (e.key === ' ' || e.key === 'Enter')) startGame();
+  // util: exibir erro amigável na tela (se existir #error) e no console
+  function reportError(msg) {
+    try {
+      console.error('[Lcgame] ' + msg);
+      var errEl = document.getElementById('error') || document.createElement('div');
+      errEl.id = 'error';
+      errEl.style.color = '#ff6b6b';
+      errEl.style.marginTop = '10px';
+      errEl.textContent = 'Erro: ' + msg;
+      if (!document.getElementById('error')) {
+        var status = document.getElementById('status');
+        if (status && status.parentNode) status.parentNode.appendChild(errEl);
+        else {
+          var ga = document.getElementById('gameArea');
+          if (ga) ga.appendChild(errEl);
+        }
+      }
+    } catch(e){ console.warn('Falha ao reportar erro visualmente', e); }
+  }
+
+  // função segura para iniciar o conteúdo do jogo
+  function initGameSafe() {
+    try {
+      initGame();
+    } catch (e) {
+      reportError('Erro ao iniciar jogo: ' + (e && e.message ? e.message : e));
+    }
+  }
+
+  // ---------------------------
+  // Conteúdo do jogo mínimo
+  // ---------------------------
+  function initGame() {
+    // remover mensagem antiga
+    var container = document.getElementById('gameArea');
+    if (!container) {
+      reportError('Elemento #gameArea não encontrado.');
+      return;
+    }
+    container.innerHTML = ''; // limpa "Carregando..."
+
+    // criar um painel simples com texto e botão
+    var panel = document.createElement('div');
+    panel.style.color = '#fff';
+    panel.style.padding = '12px';
+    panel.style.textAlign = 'center';
+    panel.style.width = '100%';
+
+    var title = document.createElement('h2');
+    title.textContent = 'Primeira Fase: Cela 01';
+    title.style.margin = '6px 0 8px 0';
+    panel.appendChild(title);
+
+    var desc = document.createElement('p');
+    desc.textContent = 'Toque na porta para tentar abrir. Encontre a chave na cela!';
+    desc.style.margin = '6px 0 12px 0';
+    panel.appendChild(desc);
+
+    // área do "jogo" (canvas)
+    var gameBox = document.createElement('div');
+    gameBox.style.width = '100%';
+    gameBox.style.height = '220px';
+    gameBox.style.background = '#0b1220';
+    gameBox.style.border = '2px solid rgba(255,255,255,0.04)';
+    gameBox.style.borderRadius = '6px';
+    gameBox.style.position = 'relative';
+    gameBox.style.display = 'flex';
+    gameBox.style.alignItems = 'center';
+    gameBox.style.justifyContent = 'center';
+    gameBox.style.flexDirection = 'column';
+
+    panel.appendChild(gameBox);
+
+    // texto com o estado
+    var stateText = document.createElement('div');
+    stateText.textContent = 'Você está na cela. Pontos: 0';
+    stateText.style.marginTop = '8px';
+    panel.appendChild(stateText);
+
+    // botão "procurar chave"
+    var btn = document.createElement('button');
+    btn.textContent = 'Procurar chave';
+    btn.style.padding = '10px 16px';
+    btn.style.borderRadius = '8px';
+    btn.style.border = 'none';
+    btn.style.background = '#1ea7ff';
+    btn.style.color = '#022034';
+    btn.style.fontWeight = '700';
+    btn.style.marginTop = '10px';
+    btn.onclick = function(){
+      // lógica simples: 30% de chance de achar a chave
+      var found = Math.random() < 0.30;
+      if (found) {
+        stateText.textContent = 'Você encontrou a CHAVE! Abra a porta agora.';
+        // substituir botão por botão abrir porta
+        btn.style.display = 'none';
+        var openBtn = document.createElement('button');
+        openBtn.textContent = 'Abrir porta';
+        openBtn.style.padding = '10px 16px';
+        openBtn.style.borderRadius = '8px';
+        openBtn.style.border = 'none';
+        openBtn.style.background = '#4ade80';
+        openBtn.style.color = '#022034';
+        openBtn.onclick = function(){
+          // vitória simples: avançar de fase (exemplo)
+          gameBox.innerHTML = '<div style="color:#fff;font-weight:700">Porta aberta — você escapou desta cela!</div>';
+          stateText.textContent = 'Pontos: 100';
+        };
+        panel.appendChild(openBtn);
+      } else {
+        // não achou; mensagem temporária
+        stateText.textContent = 'Nada aqui... continue procurando.';
+        // ligeira animação de esperança
+        btn.style.transform = 'scale(0.98)';
+        setTimeout(()=> btn.style.transform = '', 120);
+      }
+    };
+
+    // botão reiniciar/novo jogo
+    var restart = document.createElement('button');
+    restart.textContent = 'Reiniciar Fase';
+    restart.style.padding = '8px 12px';
+    restart.style.marginLeft = '8px';
+    restart.style.borderRadius = '8px';
+    restart.style.border = '1px solid rgba(255,255,255,0.06)';
+    restart.style.background = 'transparent';
+    restart.style.color = '#fff';
+    restart.onclick = function(){
+      // reset simples: re-executar initGame
+      initGame();
+    };
+
+    var controls = document.createElement('div');
+    controls.style.marginTop = '12px';
+    controls.appendChild(btn);
+    controls.appendChild(restart);
+
+    panel.appendChild(controls);
+
+    // append panel to container
+    container.appendChild(panel);
+
+    // sinaliza carregamento OK
+    window.__lcgame_loaded = true;
+    console.log('[Lcgame] jogo inicializado com sucesso.');
+  }
+
+  // registrar handlers de segurança: se houver erro, mostrar
+  window.addEventListener('error', function(ev){
+    reportError('Erro runtime: ' + (ev.message || ev.error || ev.filename));
   });
-  window.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+
+  window.addEventListener('unhandledrejection', function(ev){
+    reportError('Promise rejeitada: ' + (ev.reason && ev.reason.message ? ev.reason.message : ev.reason));
   });
 
-  // botões touch (cria apenas em mobile)
-  const touchControls = document.createElement('div');
-  touchControls.style.position = 'absolute';
-  touchControls.style.left = '0';
+  // inicia após pequena espera (garante que DOM esteja pronto)
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initGameSafe, 50);
+  } else {
+    document.addEventListener('DOMContentLoaded', initGameSafe);
+  }
+
+})();  touchControls.style.left = '0';
   touchControls.style.right = '0';
   touchControls.style.bottom = '10px';
   touchControls.style.height = '120px';
