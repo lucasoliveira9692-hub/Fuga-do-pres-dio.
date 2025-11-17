@@ -1,40 +1,112 @@
-/* jogo.js - Lcgame (versão final pronta)
-   - marca window.__lcgame_loaded = true quando inicializado
-   - exibe uma cena inicial funcional: procurar chave, abrir porta
-   - seguro contra erros (reporta no #error criado no index)
-*/
+console.log("Lcgame iniciado");
 
-(function(){
-  'use strict';
-  window.__lcgame_loaded = false;
+// Canvas
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-  function safeReport(msg){
-    try {
-      console.error('[Lcgame] ' + msg);
-      var e = document.getElementById('error');
-      if(e){ e.style.display = 'block'; e.textContent = msg; }
-    } catch(err){}
+// Jogador
+const jogador = {
+  x: 20,
+  y: 300,
+  w: 25,
+  h: 25,
+  cor: "cyan",
+  vx: 0,
+  vy: 0,
+  velocidade: 3
+};
+
+// Chave
+const chave = {
+  x: 220,
+  y: 80,
+  w: 20,
+  h: 20,
+  cor: "yellow",
+  pega: false
+};
+
+// Porta
+const porta = {
+  x: 250,
+  y: 10,
+  w: 30,
+  h: 40,
+  cor: "brown"
+};
+
+// Controles
+let teclas = {};
+document.addEventListener("keydown", e => teclas[e.key] = true);
+document.addEventListener("keyup", e => teclas[e.key] = false);
+
+// Movimentação
+function moverJogador() {
+  jogador.vx = 0;
+  jogador.vy = 0;
+
+  if (teclas["ArrowUp"]) jogador.vy = -jogador.velocidade;
+  if (teclas["ArrowDown"]) jogador.vy = jogador.velocidade;
+  if (teclas["ArrowLeft"]) jogador.vx = -jogador.velocidade;
+  if (teclas["ArrowRight"]) jogador.vx = jogador.velocidade;
+
+  jogador.x += jogador.vx;
+  jogador.y += jogador.vy;
+
+  // Limites
+  jogador.x = Math.max(0, Math.min(canvas.width - jogador.w, jogador.x));
+  jogador.y = Math.max(0, Math.min(canvas.height - jogador.h, jogador.y));
+}
+
+// Colisão
+function colisao(a, b) {
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
+}
+
+function atualizar() {
+  moverJogador();
+
+  // Pegando a chave
+  if (!chave.pega && colisao(jogador, chave)) {
+    chave.pega = true;
+    document.getElementById("mensagem").innerText = "Você pegou a chave!";
   }
 
-  function init(){
-    var container = document.getElementById('gameArea');
-    if(!container){ safeReport('Elemento #gameArea não encontrado.'); return; }
-    container.innerHTML = '';
-    var panel = document.createElement('div');
-    panel.style.color = '#e6eef8';
-    panel.style.padding = '12px';
-    panel.style.textAlign = 'center';
+  // Abrindo porta
+  if (chave.pega && colisao(jogador, porta)) {
+    document.getElementById("mensagem").innerText =
+      "Parabéns! Você escapou da primeira fase!";
+  }
 
-    var title = document.createElement('h2');
-    title.textContent = 'Primeira Fase — Cela 01';
-    panel.appendChild(title);
+  desenhar();
+  requestAnimationFrame(atualizar);
+}
 
-    var instr = document.createElement('p');
-    instr.textContent = 'Objetivo: encontre a chave e abra a porta. Toque em "Procurar chave".';
-    panel.appendChild(instr);
+// Desenho do jogo
+function desenhar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    var gameBox = document.createElement('div');
-    gameBox.style.width = '100%';
+  // Jogador
+  ctx.fillStyle = jogador.cor;
+  ctx.fillRect(jogador.x, jogador.y, jogador.w, jogador.h);
+
+  // Chave
+  if (!chave.pega) {
+    ctx.fillStyle = chave.cor;
+    ctx.fillRect(chave.x, chave.y, chave.w, chave.h);
+  }
+
+  // Porta
+  ctx.fillStyle = porta.cor;
+  ctx.fillRect(porta.x, porta.y, porta.w, porta.h);
+}
+
+atualizar();    gameBox.style.width = '100%';
     gameBox.style.height = '220px';
     gameBox.style.background = '#081824';
     gameBox.style.border = '1px solid rgba(255,255,255,0.03)';
