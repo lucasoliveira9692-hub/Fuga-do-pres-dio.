@@ -1,40 +1,74 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lcgame — Fuga do Presídio</title>
-  <meta name="theme-color" content="#0b1220" />
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <title>Fuga do Presídio</title>
+
   <style>
-    :root{--bg:#0b1220;--panel:#0f1724;--accent:#1ea7ff;--text:#e6eef8}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071026);color:var(--text);font-family:system-ui,Arial,Helvetica,sans-serif}
-    .wrap{max-width:920px;margin:18px auto;padding:12px}
-    h1{margin:8px 0 12px}
-    #gameArea{margin:12px auto;width:90%;height:420px;border-radius:10px;background:var(--panel);display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.04)}
-    #status{color:#bfcfe0}
-    #error{color:#ff8a8a;display:none;margin-top:10px}
-    footer{margin-top:12px;color:#9fb3c9;font-size:13px}
-    button.btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:#012;font-weight:700;cursor:pointer}
+    body {
+      margin: 0;
+      background: #0d1117;
+      font-family: Arial;
+      color: white;
+      text-align: center;
+    }
+
+    h1 { margin-top: 20px; }
+
+    #container {
+      background: #111827;
+      margin: 20px auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 12px;
+      border: 2px solid #1f2937;
+    }
+
+    canvas {
+      background: #111;
+      width: 100%;
+      height: 260px;
+      border: 2px solid #374151;
+      border-radius: 10px;
+    }
+
+    button {
+      margin: 10px 5px;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      color: white;
+      background: #2563eb;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Lcgame — Fuga do Presídio</h1>
-    </header>
 
-    <main>
-      <div id="gameArea" role="main" aria-live="polite">
-        <div>
-          <div id="status">Carregando jogo...</div>
-          <div id="error" role="alert"></div>
-        </div>
-      </div>
-    </main>
+<h1>Lcgame — Fuga do Presídio</h1>
 
-    <footer>
-      Abra em modo anônimo se não ver atualizações. Este pacote foi preparado para GitHub Pages.
+<div id="container">
+  <h2>Primeira Fase — Cela 01</h2>
+  <p>Objetivo: encontre a chave e abra a porta.</p>
+
+  <!-- AQUI É ONDE O JOGO APARECE -->
+  <canvas id="areaJogo" width="300" height="300"></canvas>
+
+  <p>Pontos: <span id="pontos">0</span></p>
+
+  <button onclick="procurarChave()">Procurar chave</button>
+  <button onclick="reiniciar()">Reiniciar fase</button>
+</div>
+
+<script src="jogo.js"></script>
+</body>
+</html>      Abra em modo anônimo se não ver atualizações. Este pacote foi preparado para GitHub Pages.
     </footer>
   </div>
 
