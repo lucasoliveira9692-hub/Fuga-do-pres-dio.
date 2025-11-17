@@ -3,12 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lcgame - Fuga do Presídio</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Fuga do Presídio</title>
+    <style>
+        body { 
+            background: #111; 
+            color: white; 
+            text-align: center; 
+            font-family: Arial; 
+            margin: 0;
+        }
+        canvas {
+            background: #222;
+            margin-top: 20px;
+            border: 3px solid white;
+        }
+    </style>
 </head>
 <body>
-    <h1>Fuga do Presídio</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <script src="jogo.js"></script>
+
+<h1>Fuga do Presídio</h1>
+<canvas id="gameCanvas" width="320" height="480"></canvas>
+
+<script src="game.js"></script>
+
 </body>
 </html>
