@@ -1,40 +1,10 @@
-// jogo.js - versão inicial do Lcgame
-// Cria canvas dentro do #gameArea, controle por teclado e toque, obstáculos e pontuação.
+console.log("Lcgame iniciado");
 
-(() => {
-  // cria canvas dentro do #gameArea
-  const container = document.getElementById('gameArea');
-  container.innerHTML = ''; // limpa texto "carregando"
-  const canvas = document.createElement('canvas');
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.width = Math.min(900, Math.floor(container.clientWidth * window.devicePixelRatio));
-  canvas.height = Math.min(1400, Math.floor(container.clientHeight * window.devicePixelRatio));
-  container.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-
-  // escala para telas de alta densidade
-  function resizeCanvas() {
-    const w = container.clientWidth;
-    const h = container.clientHeight;
-    const ratio = window.devicePixelRatio || 1;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    canvas.width = Math.floor(w * ratio);
-    canvas.height = Math.floor(h * ratio);
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  // estado do jogo
-  const game = {
-    running: false,
-    speed: 2,
-    score: 0,
-    frame: 0,
-    obstacles: [],
-    lastObstacleAt: 0,
+// Exemplo simples para testar
+document.getElementById("gameArea").innerHTML = `
+  <h2>O ladrão acorda na cela...</h2>
+  <p>Toque na tela para procurar uma forma de fugir!</p>
+`;    lastObstacleAt: 0,
     obstacleInterval: 90, // frames
   };
 
